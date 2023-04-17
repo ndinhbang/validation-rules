@@ -7,8 +7,16 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * @reference \Illuminate\Validation\ValidationRuleParser::explodeWildcardRules
+ * @reference \Illuminate\Validation\Rules\DatabaseRule
+ * @reference \Illuminate\Validation\Concerns\ReplacesAttributes
+ * @reference \Illuminate\Validation\Rules\Unique
+ * @link https://www.amitmerchant.com/extending-validator-facade-for-custom-validation-rules-in-laravel/
+ */
 class CollectionExists implements ValidationRule
 {
+
     protected Model $model;
     protected string $column;
     protected array $accessors;
@@ -66,7 +74,7 @@ class CollectionExists implements ValidationRule
      * @return bool
      * @throws \Exception
      */
-    public function passes($attribute, $value)
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (!is_array($value)) {
             throw new \InvalidArgumentException(
@@ -173,6 +181,7 @@ class CollectionExists implements ValidationRule
         return $this;
     }
 
+
     /**
      * Get the validation error message.
      *
@@ -181,10 +190,5 @@ class CollectionExists implements ValidationRule
     public function message(): string
     {
         return ":attribute chứa giá trị không hợp lệ";
-    }
-
-    public function validate(string $attribute, mixed $value, Closure $fail): void
-    {
-        // TODO: Implement validate() method.
     }
 }

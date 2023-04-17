@@ -2,11 +2,12 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class ModelExists implements Rule
+class ModelExists implements ValidationRule
 {
     protected Model $model;
     protected string $column;
@@ -57,7 +58,7 @@ class ModelExists implements Rule
      * @return bool
      * @throws \Exception
      */
-    public function passes($attribute, $value): bool
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $record = $this->model
             ->where($this->column, $value)
@@ -98,4 +99,5 @@ class ModelExists implements Rule
     {
         return ":attribute :value không tồn tại";
     }
+
 }
