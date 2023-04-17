@@ -4,23 +4,31 @@ namespace App\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Validation\Rules\DatabaseRule;
+use Illuminate\Validation\Validator;
 
 /**
- * @reference \Illuminate\Validation\ValidationRuleParser::explodeWildcardRules
- * @reference \Illuminate\Validation\Rules\DatabaseRule
- * @reference \Illuminate\Validation\Concerns\ReplacesAttributes
- * @reference \Illuminate\Validation\Rules\Unique
+ * @see \Illuminate\Validation\ValidationRuleParser::explodeWildcardRules
+ * @see \Illuminate\Validation\Rules\DatabaseRule
+ * @see \Illuminate\Validation\Concerns\ReplacesAttributes
+ * @see \Illuminate\Validation\Rules\Unique
  * @link https://www.amitmerchant.com/extending-validator-facade-for-custom-validation-rules-in-laravel/
  */
-class CollectionExists implements ValidationRule
+class CollectionExists implements ValidationRule, ValidatorAwareRule
 {
+    use Conditionable, DatabaseRule;
 
-    protected Model $model;
-    protected string $column;
-    protected array $accessors;
-    protected \Closure|array $wheres;
+    /**
+     * The validator instance.
+     *
+     * @var \Illuminate\Validation\Validator
+     */
+    protected $validator;
+
     protected array $withs = [];
     protected string $blinkKey;
     protected bool $keyable = false;
@@ -30,7 +38,6 @@ class CollectionExists implements ValidationRule
      */
     protected bool $required;
     protected bool $cacheable;
-    protected ?string $errorMessage = null;
 
     /**
      * Indicates whether the rule should be implicit.
@@ -40,30 +47,13 @@ class CollectionExists implements ValidationRule
     public bool $implicit = false;
 
     /**
-     * @throws \Exception|\Throwable
+     * Set the current validator.
      */
-    public function __construct(
-        string         $modelClass,
-        array|string   $accessors = '*.id',
-        string         $column = null,
-        \Closure|array $wheres = [],
-        bool           $required = true,
-        bool           $cacheable = true
-    )
+    public function setValidator(Validator $validator): static
     {
-        throw_if(
-            !is_subclass_of($modelClass, Model::class),
-            new \InvalidArgumentException(
-                "{$modelClass} must be a model"
-            )
-        );
+        $this->validator = $validator;
 
-        $this->model = resolve($modelClass);
-        $this->column = $column ?? $this->model->getRouteKeyName();
-        $this->required = $required;
-        $this->cacheable = $cacheable;
-        $this->accessors = is_array($accessors) ? $accessors : [$accessors];
-        $this->wheres = $wheres;
+        return $this;
     }
 
     /**
@@ -190,5 +180,10 @@ class CollectionExists implements ValidationRule
     public function message(): string
     {
         return ":attribute chứa giá trị không hợp lệ";
+    }
+
+    public function setValidator(Validator $validator)
+    {
+        // TODO: Implement setValidator() method.
     }
 }

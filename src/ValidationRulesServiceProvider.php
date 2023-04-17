@@ -3,6 +3,7 @@
 namespace Ndinhbang\ValidationRules;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Validator;
 
 class ValidationRulesServiceProvider extends ServiceProvider
 {
@@ -11,6 +12,10 @@ class ValidationRulesServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Validator::extend('titlecase', function ($attribute, $value, $parameters, $validator) {
+            return ucwords($value) === $value;
+        });
+
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/config.php' => config_path('validation-rules.php'),
