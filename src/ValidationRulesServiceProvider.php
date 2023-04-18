@@ -2,27 +2,30 @@
 
 namespace Ndinhbang\ValidationRules;
 
+use Ndinhbang\ValidationRules\Validator\ModelExistsValidator;
+use Ndinhbang\ValidationRules\Validator\ModelCollectionExistsValidator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
 
 class ValidationRulesServiceProvider extends ServiceProvider
 {
+    protected array $validators = [
+        'model_collection_exists' => ModelCollectionExistsValidator::class,
+        'model_exists' => ModelExistsValidator::class,
+    ];
     /**
      * Bootstrap the application services.
      */
     public function boot()
     {
-        Validator::extend('titlecase', function ($attribute, $value, $parameters, $validator) {
-            return ucwords($value) === $value;
-        });
+        foreach ($this->validators as $name => $class) {
+            Validator::extend($name, $class);
+        }
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/config.php' => config_path('validation-rules.php'),
             ], 'config');
-
-            // Registering package commands.
-            // $this->commands([]);
         }
     }
 
