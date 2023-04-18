@@ -4,14 +4,22 @@ namespace Ndinhbang\ValidationRules\Rule;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Validation\Rules\DatabaseRule;
+use Ndinhbang\ValidationRules\Concerns\ValidatorAware;
 
-class ModelExists implements ValidationRule
+class ModelExists implements ValidationRule, ValidatorAwareRule
 {
-    use Conditionable, DatabaseRule;
+    use Conditionable,
+        DatabaseRule,
+        ValidatorAware;
+
+    /**
+     * @var bool
+     */
+    public bool $implicit = false;
+
 
     /**
      * Determine if the validation rule passes.
@@ -47,5 +55,4 @@ class ModelExists implements ValidationRule
 //
 //        return true;
     }
-
 }

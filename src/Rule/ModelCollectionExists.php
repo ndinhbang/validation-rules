@@ -3,48 +3,58 @@
 namespace Ndinhbang\ValidationRules\Rule;
 
 use Closure;
+use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Validation\Rules\DatabaseRule;
 use Illuminate\Validation\Validator;
+use Ndinhbang\ValidationRules\Concerns\ValidatorAware;
 
 /**
- * @see \Illuminate\Validation\ValidationRuleParser::explodeWildcardRules
+ * @see \Illuminate\Validation\Validator::passes
+ * @see \Illuminate\Validation\Validator::validateAttribute
+ * @see \Illuminate\Validation\Validator::validateUsingCustomRule
+ * @see \Illuminate\Validation\ValidationRuleParser::prepareRule
+ * @see \Illuminate\Validation\InvokableValidationRule::passes
  * @see \Illuminate\Validation\Rules\DatabaseRule
  * @see \Illuminate\Validation\Concerns\ReplacesAttributes
+ * @see \Illuminate\Validation\Validator::validateExists
  * @see \Illuminate\Validation\Rules\Unique
+ * @see \Illuminate\Validation\Rules\Exists
  * @link https://www.amitmerchant.com/extending-validator-facade-for-custom-validation-rules-in-laravel/
  */
 class ModelCollectionExists implements ValidationRule, ValidatorAwareRule
 {
-    use Conditionable, DatabaseRule;
+    use Conditionable,
+        DatabaseRule,
+        ValidatorAware;
 
     /**
-     * The validator instance.
+     * @var bool
+     */
+    public bool $implicit = false;
+
+    /**
+     * Create a new rule instance.
      *
-     * @var \Illuminate\Validation\Validator
+     * @param string $table
+     * @param string $column
+     * @return void
      */
-    protected $validator;
-
-    /**
-     * Set the current validator.
-     */
-    public function setValidator(Validator $validator): static
+    public function __construct($table, $column = 'NULL')
     {
-        $this->validator = $validator;
+        $this->column = $column;
 
-        return $this;
+        $this->table = $this->resolveTableName($table);
     }
 
     /**
-     * Determine if the validation rule passes.
+     * Run the validation rule.
      *
      * @param string $attribute
      * @param mixed $value
-     * @param Closure $fail
+     * @param \Closure(string): \Illuminate\Translation\PotentiallyTranslatedString $fail
      * @return void
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
